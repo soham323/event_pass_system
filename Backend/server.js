@@ -1,24 +1,33 @@
 import mongoose from "mongoose";
-import { DB_NAME } from "./constants.js";
-import connectDB from "./db/db.js";
 import dotenv from "dotenv";
-import { app } from "./app.js";
+import connectDB from "./db/db.js";
+import { app } from "./app.js";  // Ensure app.js exports the express instance
+import express from "express";
+import passRoutes from './routes/passRoutes.js' // Correct the route file path
 
-dotenv.config(
-    {
-        path: "./env",
-    }
-);
+// Load environment variables
+dotenv.config({ path: "./.env" });  // Use .env for environment variables
 
+// Connect to MongoDB
 connectDB()
-.then(()=>{
-    app.listen(process.env.PORT || 3000, ()=>{
-        console.log(`Server is running on PORT : ${process.env.PORT}`);
+  .then(() => {
+    // Middleware to parse JSON
+    app.use(express.json());
+
+    // Routes
+    app.use('/api/passes', passRoutes);
+
+    // Start the server
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+      console.log(`Server is running on PORT : ${PORT}`);
     });
-    app.on("error", (err)=>{
-        console.log(`Got an error while connecting to server: ${err}`);
-    })
-})
-.catch(err=>{
+
+    // Handle server errors
+    app.on("error", (err) => {
+      console.log(`Got an error while connecting to server: ${err}`);
+    });
+  })
+  .catch((err) => {
     console.log("MongoDB Connection Failed: ", err);
-})
+  });

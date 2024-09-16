@@ -8,7 +8,7 @@ const passSchema = new mongoose.Schema({
     },
     event:{
         type: String,
-        required: true,
+        required: false,
     },
     scanned:{
         type: Boolean,
@@ -24,4 +24,4 @@ const passSchema = new mongoose.Schema({
 })
 
 
-export const Pass = mongoose.model('Pass', PassSchema);
+export const Pass = mongoose.model('Pass', passSchema);
