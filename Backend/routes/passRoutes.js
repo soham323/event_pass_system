@@ -4,16 +4,43 @@ import { Pass } from "../models/pass.js";
 
 const router = express.Router();
 
+router.post('/generate', async (req, res) => {
+  const {qrCode, eventName} = req.body;
+  try {
+    const newPass = new Pass({
+      qrCode,
+      eventName,
+    });
+
+    await newPass.save();
+    res.status(201).json({
+      success: true,
+      message: "Pass Generated successfully!",
+      pass: newPass,
+    })
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error generating pass",
+      error: error.message
+    });
+    console.log("Error: ", error);
+  }
+});
+
+// Scan a pass
 router.post('/scan', async (req, res) => {
   try {
-    const { qrData } = req.body;
+    const { passId, eventName } = req.body;
 
-    // Ensure that you initialize the pass variable correctly
-    const pass = await Pass.findOne({ qrCode: qrData });
+    // Find the pass based on both qrData and eventName
+    const pass = await Pass.findOne({ passId, eventName });
 
     // If no pass found, return an error
     if (!pass) {
-      return res.status(404).json({ message: 'Pass not found' });
+      return res.status(404).json({ 
+        message: 'Pass not found for this event',
+       });
     }
 
     // If pass is already scanned, return an error
@@ -32,5 +59,6 @@ router.post('/scan', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
 
 export default router;
