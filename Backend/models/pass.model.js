@@ -1,21 +1,14 @@
-import mongoose from "mongoose";
-
-const generatePassId = () =>{
-    const timestamp = Date.now();
-    const randomNum = Math.floor(1000 + Math.random() * 9000);
-    return `pass-${timestamp}_${randomNum}`;
-}
+import mongoose, { mongo } from "mongoose";
 
 const passSchema = new mongoose.Schema({
     passId:{
         type: String,
         require: true,
         unique: true,
-        default: generatePassId,
     },
-    eventName:{
-        type: String,
-        required: true,
+    eventId:{
+        type: mongoose.Schema.Types.ObjectId, ref: 'Event',
+        required: true
     },
     scanned:{
         type: Boolean,

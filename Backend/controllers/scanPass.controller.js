@@ -1,4 +1,4 @@
-import { Pass } from "../models/pass.js"; 
+import { Pass } from "../models/pass.model.js"; 
 
 const scanPass = async (req, res) => {
     try {
