@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import Pass from 'Pass.model.js';
+import {Pass} from "./pass.model.js";
 const eventSchema = new mongoose.Schema({
   organizer: {
     type: mongoose.Schema.Types.ObjectId,
