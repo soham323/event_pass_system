@@ -24,28 +24,33 @@ const registerUser= asyncHandler(async (req,res)=>{
     }
 
     //Checking if user already exist or not
-    const existedUser = User.findOne({
+    const existedUser = await User.findOne({
         email
     })
     if(existedUser){
         throw new ApiError(409,"User with email already exist! Please sign up with different email.")
     }
 
-    const profileImageLocalPath = req.files?.profileImage[0]?.path;
+    // const profileImageLocalPath = req.files?.profileImage[0]?.path;
+    let profileImageLocalPath;
+    if(req.files && Array.isArray(req.files.profileImage) && req.files.profileImage.length > 0){
+        profileImageLocalPath = req.files.profileImage[0].path;
+    }
 
     if(!profileImageLocalPath){
         throw new ApiError(400,"profileImage Required")
     }
     const pfp = await uploadCloudinary(profileImageLocalPath)
     if(!pfp){
-        throw new ApiError(400,"pfp file is required")
+        throw new ApiError(400,"Failed to Upload image on cloudinary");
     }
+    console.log("pfp file",pfp.url)
 
     const user = await User.create({
         name,
         email: email.toLowerCase(),
         password,
-        pfp: pfp.url
+        profileImage: pfp?.url || "",
     })
     const createdUser = await User.findById(user._id).select(
         "-password"
@@ -55,7 +60,7 @@ const registerUser= asyncHandler(async (req,res)=>{
     }
 
     return res.status(201).json(
-        new ApiRes(200,createdUser, "User Registered successfully!");
+        new ApiRes(200,createdUser, "User Registered successfully!")
     )
 });
 

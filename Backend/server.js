@@ -4,6 +4,7 @@ import connectDB from "./db/db.js";
 import { app } from "./app.js";  // Ensure app.js exports the express instance
 import express from "express";
 import eventRoutes from "./routes/eventRoute.js";
+import userRoute from "./routes/user.routes.js";
 // Load environment variables
 dotenv.config({ path: "./.env" });  // Use .env for environment variables
 
@@ -15,6 +16,7 @@ connectDB()
 
     // Routes
     app.use('/api', eventRoutes);
+    app.use('/api/user', userRoute);
 
     // Start the server
     const PORT = process.env.PORT || 3000;
