@@ -58,13 +58,13 @@ const userSchema = new mongoose.Schema({
       expiryDate: String,
       cardHolderName: String,
     },
-    refreshToken:{
-      type: String,
-    },
-    accessToken:{
-      type: String,
-    }
   },
+  refreshToken:{
+    type: String,
+  },
+  accessToken:{
+    type: String,
+  }
 });
 userSchema.pre("save", async function (next) {
   if(!this.isModified("password")) return next();
