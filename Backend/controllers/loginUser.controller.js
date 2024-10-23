@@ -144,7 +144,7 @@ const refreshAccessToken = asyncHandler(async(req,res)=>{
 const changeCurrentPassword = asyncHandler(async(req,res)=>{
     const {oldPassword, newPassword} = req.body
 
-    const user =  await User.findById(re.user?._id)
+    const user =  await User.findById(req.user?._id)
     const isPasswordCorrect = await user.isPasswordCorrect(oldPassword);
     if(!isPasswordCorrect){
         throw new ApiError(400,"Incorrect Password")
@@ -158,18 +158,22 @@ const changeCurrentPassword = asyncHandler(async(req,res)=>{
 // Get Current User
 const getCurrentUser = asyncHandler(async(req,res)=>{
     return res.status(200)
-    .json(200, req.user, "Current User Fetched Successfully")
+    .json(new ApiRes(200, req.user, "Current User Fetched Successfully"))
 })
 
 
 //  Update Account Details
 const updateUserDetails = asyncHandler(async(req,res)=>{
-    const {name, email, } = req.body
+    const {name, email } = req.body
     if (!name || !email){
         throw new ApiError(400,"All Fields are Required!")
     }
 
-    const user = User.findByIdAndUpdate(
+    const userExist = await User.findOne({email});
+    if(userExist){
+        throw new ApiError(401, "User With this email already exist try different email!.")
+    }
+    const user = await User.findByIdAndUpdate(
         req.user?._id,
         {
             $set:{
@@ -178,35 +182,45 @@ const updateUserDetails = asyncHandler(async(req,res)=>{
             }
         },
         {new:true}
-    ).select("-password")
+    ).select("-password");
+
+    if (!user) {
+        throw new ApiError(404, "User not found!");
+    }
+
     return res.status(200).json(new ApiRes(200,user, " Account Details updated Successfully!"))
 })
 
 // Update profile Image
-const updateUserProfileImage = asyncHandler(async(req,res)=>{
-    const profileLocalPath = req.file?.path
-    if (!profileLocalPath){
-        new ApiError(400, "Profile Image Missing")
+const updateUserProfileImage = asyncHandler(async (req, res) => {
+    // Ensure a file was uploaded
+    if (!req.file) {
+        throw new ApiError(400, "No file uploaded!");
     }
-    const pf = await uploadOnCloudinary(profileLocalPath)
-    if(pf.url){
-        throw new ApiError(400, "Error while uploading Profile Image")
-    }
-    await User.findByIdAndUpdate(
-        req.user?._id,
-        {
-            $set:{
-                profileImage:pf.url,
-            }
-        },
-        {new:true}
-    ).select("-password")
 
-    return res.status(200)
-    .json(
-        new ApiRes(200,user, "Profile Image Updated Successfully!")
-    )
-})
+    // Upload the file to Cloudinary
+    const result = await uploadOnCloudinary(req.file.path);
+
+    // If the upload failed, throw an error
+    if (!result || !result.url) {
+        throw new ApiError(500, "Failed to upload image to Cloudinary.");
+    }
+
+    // Update the user's profile image URL in the database
+    const user = await User.findByIdAndUpdate(
+        req.user._id,
+        { $set: { profileImage: result.url } },
+        { new: true }
+    ).select("-password");
+
+    if (!user) {
+        throw new ApiError(404, "User not found!");
+    }
+
+    // Return a success response
+    return res.status(200).json(new ApiRes(200, user, "Profile image updated successfully!"));
+});
+
 
 export {
     loginUser,
