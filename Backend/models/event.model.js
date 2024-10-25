@@ -35,7 +35,7 @@ const eventSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  passesGenerated: {
+  numberOfPasses: {
     type: Number,
     default: 0,
   },
@@ -71,6 +71,7 @@ const eventSchema = new mongoose.Schema({
       ref: 'Pass',
     },
   ],
+  
 });
 
 export const Event = mongoose.model('Event', eventSchema);

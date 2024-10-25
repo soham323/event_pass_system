@@ -15,7 +15,7 @@ connectDB()
     app.use(express.json());
 
     // Routes
-    app.use('/api', eventRoutes);
+    app.use('/api/event', eventRoutes);
     app.use('/api/user', userRoute);
 
     // Start the server
