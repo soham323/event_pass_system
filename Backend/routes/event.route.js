@@ -22,5 +22,6 @@ router.route("/getEventDetails/:organizerId").get(verifyJWT,getEventDetails);
 // Route to delete an event
 router.route("/deleteEvent/:eventId").delete(verifyJWT, deleteEvent)
 
+
 export default router;
 

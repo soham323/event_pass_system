@@ -17,7 +17,6 @@ const passSchema = new mongoose.Schema({
   },
   qrCode: {
     type: String,
-    required: true,
   },
   scanned: {
     type: Boolean,
