@@ -1,5 +1,5 @@
 import { Router } from "express";
-import registerUser from "../controllers/registerUser.controller.js";
+import {registerAttendee, registerUser} from "../controllers/registerUser.controller.js";
 import { upload } from "../middleware/multer.middleware.js";
 import { changeCurrentPassword, getCurrentUser, loginUser, logoutUser, refreshAccessToken, updateUserDetails, updateUserProfileImage } from "../controllers/loginUser.controller.js";
 import { verifyJWT } from "../middleware/auth.middleware.js";
@@ -32,6 +32,15 @@ router.route("/updateUser").patch(verifyJWT, updateUserDetails)
 router.route("/updateProfileImage").patch(verifyJWT, 
     upload.single("profileImage"), updateUserProfileImage
 )
+
+
+
+
+//registerAttendee 
+router.route("/registerAttendee").post(registerAttendee)
+
+
+
 //refreshToken
 router.route("/refreshAccessToken").post(refreshAccessToken)
 export default router;

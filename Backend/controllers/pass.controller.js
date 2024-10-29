@@ -57,4 +57,64 @@ const generateEventPasses = asyncHandler(async(req,res)=>{
 
 })
 
-export {generateEventPasses}
+const preparePassPurchase = asyncHandler(async(req, res)=>{
+    const {eventId} = req.params;
+    console.log(eventId);
+    const {numberOfPasses, buyerName} = req.body;
+    console.log(numberOfPasses)
+    // validity check for number of passes and buyer name
+    if(!numberOfPasses || !buyerName){
+        throw new ApiError(401, "Please Specify number of passes and your name!")
+    }
+
+    const event =  await Event.findById(eventId).select("eventName eventPhoto description venue startDateTime endDateTime ticketPrice");
+    if(!event){
+        throw new ApiError(400,"Event Not found! ")
+    }
+
+    const totalPrice =  event.ticketPrice * numberOfPasses;
+
+    // responsing total amount of bill
+    res.status(200).json(
+        new ApiRes(200, {totalPrice, event, buyerName}, "Total bill info of passes purchase!")
+    )
+})
+
+// confirm pass purchase controller 
+// To DO: - this will be run after successfull payment
+const confirmPassPurchase = asyncHandler(async (req, res) => {
+    const { eventId } = req.params;
+    const { buyerName, numOfPasses } = req.body;
+    console.log(buyerName)
+    console.log(numOfPasses)
+    if(!numOfPasses || !buyerName){
+        throw new ApiError(401, "BuyerName or Number of passes not defined");
+    }
+    // Find available passes for the event
+    const passes = await Pass.find({
+      event: eventId,
+      passSold: false,
+    }).limit(numOfPasses);
+  
+    if (passes.length < numOfPasses) {
+      throw new ApiError(400, "Not enough available passes");
+    }
+  
+    // Get the IDs of the passes to update
+    const passIds = passes.map((pass) => pass._id);
+  
+    // Mark the passes as sold and set the buyer's name
+    await Pass.updateMany(
+      { _id: { $in: passIds } },
+      { $set: { passSold: true, passHolderName: buyerName } }
+    );
+  
+    // Fetch and return the updated passes to include in the response
+    const updatedPasses = await Pass.find({ _id: { $in: passIds } });
+  
+    res.status(200).json(new ApiRes(200, { purchasedPasses: updatedPasses }, "Passes marked as sold and details retrieved successfully"));
+  });
+
+
+
+export {generateEventPasses, preparePassPurchase, confirmPassPurchase}

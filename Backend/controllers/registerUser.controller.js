@@ -3,6 +3,8 @@ import { ApiError } from "../utils/apiError.js";
 import { User } from "../models/user.model.js";
 import uploadCloudinary from "../services/cloudinary.js";
 import { ApiRes } from "../utils/apiRes.js";
+
+// register Organizer
 const registerUser= asyncHandler(async (req,res)=>{
     // get user details from frontend
     //validation - not empty 
@@ -64,5 +66,39 @@ const registerUser= asyncHandler(async (req,res)=>{
     )
 });
 
+// Register attendee
+const registerAttendee = asyncHandler(async(req,res)=>{
+    const {name, email, phoneNumber, password} = req.body;
+    console.log("details",name,email,phoneNumber,password)
+    if(!name || !email || !phoneNumber){
+        throw new ApiError(401,"All Fields are required!")
+    }
 
-export default registerUser;
+    const userAttendeeExist = await User.findOne(
+        {$or:[{email}, {phoneNumber}]}
+    ).select("-password");
+    if(userAttendeeExist){
+        throw new ApiError(400,"User already exist")
+    }
+    
+
+    const userAttendee = await User.create({
+        name,
+        email: email.toLowerCase(),
+        password,
+        phoneNumber,
+        role:"attendee",
+    })
+    const createdUserAttendee = await User.findById(userAttendee._id).select(
+        "-password"
+    )
+    if(!createdUserAttendee){
+        throw new ApiError(500,"Something went wrong while registering a user!")
+    }
+
+    return res.status(201).json(
+        new ApiRes(200,createdUserAttendee, "User Registered successfully!")
+    )
+})
+
+export  {registerUser, registerAttendee};
