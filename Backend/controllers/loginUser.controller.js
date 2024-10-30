@@ -222,8 +222,6 @@ const updateUserProfileImage = asyncHandler(async (req, res) => {
 });
 
 
-const 
-
 export {
     loginUser,
     logoutUser,
