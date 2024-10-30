@@ -15,6 +15,7 @@ connectDB()
     // Middleware to parse JSON
     app.use(express.json());
 
+
     // Routes
     app.use('/api/event', eventRoutes);
     app.use('/api/user', userRoute);
